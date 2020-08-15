@@ -3,6 +3,8 @@
   command: /bin/true
   notify:
     - Docker | reload systemd
+    - Docker | reload sysbox-fs
+    - Docker | reload sysbox-mgr
     - Docker | reload docker.socket
     - Docker | reload docker
     - Docker | wait for docker
@@ -10,6 +12,18 @@
 - name: Docker | reload systemd
   systemd:
     daemon_reload: true
+
+- name: Docker | reload sysbox-fs
+  service:
+    name: sysbox-fs
+    state: restarted
+  when: (ansible_facts[‘distribution’] in ['Ubuntu'])
+
+- name: Docker | reload sysbox-mgr
+  service:
+    name: sysbox-mgt
+    state: restarted
+  when: (ansible_facts[‘distribution’] in ['Ubuntu'])
 
 - name: Docker | reload docker.socket
   service:

@@ -1,0 +1,17 @@
+[Unit]
+Description=Sysbox FS
+Documentation=https://github.com/nestybox/sysbox/blob/master/docs/user-guide/README.md
+After=network.target
+
+[Service]
+Type=simple
+# see https://github.com/envoyproxy/envoy/issues/8297
+ExecStart=sh -c '/usr/local/sbin/sysbox-fs | tee'
+KillMode=process
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=sysbox-fs
+
+[Install]
+WantedBy=multi-user.target
+

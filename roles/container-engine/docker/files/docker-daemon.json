@@ -1,0 +1,7 @@
+{
+    "runtimes": {
+        "sysbox-runc": {
+            "path": "/usr/local/sbin/sysbox-runc"
+        }
+    }
+}

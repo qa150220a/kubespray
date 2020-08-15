@@ -16,26 +16,28 @@ FLATCAR_URL_TEMPLATE = "https://%s.release.flatcar-linux.net/amd64-usr/current/f
 DISK_UUID = Time.now.utc.to_i
 
 SUPPORTED_OS = {
-  "coreos-stable"       => {box: "coreos-stable",              user: "core", box_url: COREOS_URL_TEMPLATE % ["stable"]},
-  "coreos-alpha"        => {box: "coreos-alpha",               user: "core", box_url: COREOS_URL_TEMPLATE % ["alpha"]},
-  "coreos-beta"         => {box: "coreos-beta",                user: "core", box_url: COREOS_URL_TEMPLATE % ["beta"]},
-  "flatcar-stable"      => {box: "flatcar-stable",             user: "core", box_url: FLATCAR_URL_TEMPLATE % ["stable"]},
-  "flatcar-beta"        => {box: "flatcar-beta",               user: "core", box_url: FLATCAR_URL_TEMPLATE % ["beta"]},
-  "flatcar-alpha"       => {box: "flatcar-alpha",              user: "core", box_url: FLATCAR_URL_TEMPLATE % ["alpha"]},
-  "flatcar-edge"        => {box: "flatcar-edge",               user: "core", box_url: FLATCAR_URL_TEMPLATE % ["edge"]},
-  "ubuntu1604"          => {box: "generic/ubuntu1604",         user: "vagrant"},
-  "ubuntu1804"          => {box: "generic/ubuntu1804",         user: "vagrant"},
-  "ubuntu2004"          => {box: "generic/ubuntu2004",         user: "vagrant"},
-  "centos"              => {box: "centos/7",                   user: "vagrant"},
-  "centos-bento"        => {box: "bento/centos-7.6",           user: "vagrant"},
-  "centos8"             => {box: "centos/8",                   user: "vagrant"},
-  "centos8-bento"       => {box: "bento/centos-8",             user: "vagrant"},
-  "fedora31"            => {box: "fedora/31-cloud-base",       user: "vagrant"},
-  "fedora32"            => {box: "fedora/32-cloud-base",       user: "vagrant"},
-  "opensuse"            => {box: "bento/opensuse-leap-15.1",   user: "vagrant"},
-  "opensuse-tumbleweed" => {box: "opensuse/Tumbleweed.x86_64", user: "vagrant"},
-  "oraclelinux"         => {box: "generic/oracle7",            user: "vagrant"},
-  "oraclelinux8"        => {box: "generic/oracle8",            user: "vagrant"},
+  "coreos-stable"       => {box: "coreos-stable",              os: "coreos", user: "core", box_url: COREOS_URL_TEMPLATE % ["stable"]},
+  "coreos-alpha"        => {box: "coreos-alpha",               os: "coreos", user: "core", box_url: COREOS_URL_TEMPLATE % ["alpha"]},
+  "coreos-beta"         => {box: "coreos-beta",                os: "coreos", user: "core", box_url: COREOS_URL_TEMPLATE % ["beta"]},
+  "flatcar-stable"      => {box: "flatcar-stable",             os: "coreos", user: "core", box_url: FLATCAR_URL_TEMPLATE % ["stable"]},
+  "flatcar-beta"        => {box: "flatcar-beta",               os: "coreos", user: "core", box_url: FLATCAR_URL_TEMPLATE % ["beta"]},
+  "flatcar-alpha"       => {box: "flatcar-alpha",              os: "coreos", user: "core", box_url: FLATCAR_URL_TEMPLATE % ["alpha"]},
+  "flatcar-edge"        => {box: "flatcar-edge",               os: "coreos", user: "core", box_url: FLATCAR_URL_TEMPLATE % ["edge"]},
+  "ubuntu1604"          => {box: "generic/ubuntu1604",         os: "ubuntu-64", user: "vagrant"},
+  "ubuntu1804"          => {box: "generic/ubuntu1804",         os: "ubuntu-64", user: "vagrant"},
+  "ubuntu2004"          => {box: "generic/ubuntu2004",         os: "ubuntu-64", user: "vagrant"},
+  "debian9"             => {box: "generic/debian9",            os: "debian9-64", user: "vagrant"},
+  "debian10"            => {box: "generic/debian10",           os: "debian10-64", user: "vagrant"},
+  "centos"              => {box: "centos/7",                   os: "centos7-64", user: "vagrant"},
+  "centos-bento"        => {box: "bento/centos-7.6",           os: "centos7-64", user: "vagrant"},
+  "centos8"             => {box: "centos/8",                   os: "centos8-64", user: "vagrant"},
+  "centos8-bento"       => {box: "bento/centos-8",             os: "centos8-64", user: "vagrant"},
+  "fedora31"            => {box: "fedora/31-cloud-base",       os: "fedora-64", user: "vagrant"},
+  "fedora32"            => {box: "fedora/32-cloud-base",       os: "fedora-64", user: "vagrant"},
+  "opensuse"            => {box: "bento/opensuse-leap-15.1",   os: "opensuse-64", user: "vagrant"},
+  "opensuse-tumbleweed" => {box: "opensuse/Tumbleweed.x86_64", os: "opensuse-64", user: "vagrant"},
+  "oraclelinux"         => {box: "generic/oracle7",            os: "oraclelinux7-64", user: "vagrant"},
+  "oraclelinux8"        => {box: "generic/oracle8",            os: "oraclelinux8-64", user: "vagrant"},
 }
 
 if File.exist?(CONFIG)
@@ -138,6 +140,18 @@ Vagrant.configure("2") do |config|
           v.vmx['memsize'] = $vm_memory
           v.vmx['numvcpus'] = $vm_cpus
         end
+      end
+
+      node.vm.provider :vmware_esxi do |esxi|
+        esxi.esxi_hostname = '172.18.0.2'
+        esxi.guest_virtualhw_version = 13
+        esxi.esxi_username = 'esxiadmin'
+        esxi.esxi_disk_store = 'datastore1'
+        esxi.esxi_virtual_network = [ 'VM sandbox', 'VM k8s' ]
+        esxi.esxi_password = 'file:esxi_secret'
+        esxi.guest_memsize = $vm_memory
+        esxi.guest_numvcpus = $vm_cpus
+        esxi.guest_guestos = SUPPORTED_OS[$os][:os] || "otherlinux-64"
       end
 
       node.vm.provider :virtualbox do |vb|

@@ -255,6 +255,12 @@
   loop_control:
     loop_var: docker_plugin
 
+- name: Deploy sysbox binaries
+  unarchive:
+    src: sysbox-ubuntu20.04.1_lts-x86_64.tar.bz2
+    dest: /usr/local/sbin
+  when: (ansible_facts['distribution'] in ["Ubuntu"])
+
 - name: Set docker systemd config
   import_tasks: systemd.yml
 
